@@ -70,7 +70,9 @@ More paths give a more accurate estimate at the cost of computation time. By the
 
 This is the most practically useful feature. You input a purchase price for both the call and the put, and the heatmap shows your P&L across a grid of spot and volatility scenarios:
 
-$$\text{P\&L} = V(\sigma', S') - V_0$$
+P&L is defined as:
+
+$$V(\sigma', S') - V_0$$
 
 where $V(\sigma', S')$ is the model value at the shocked scenario and $V_0$ is your purchase price.
 
