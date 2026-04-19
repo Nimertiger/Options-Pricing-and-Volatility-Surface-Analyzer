@@ -317,8 +317,7 @@ if model_choice == "Black-Scholes":
     st.header("🟢🔴 P&L Heatmap: Spot Price vs Volatility")
     st.caption(
         f"Green = profit, Red = loss. "
-        f"Call purchased at **${call_purchase:.2f}** | Put purchased at **${put_purchase:.2f}**."
-    )
+        f"Call purchased at ${call_purchase:.2f} | Put purchased at ${put_purchase:.2f}."    )
 
     fig_pnl, (ax_call, ax_put) = plt.subplots(1, 2, figsize=(16, 6))
     fig_pnl.patch.set_facecolor("#0a0a0a")

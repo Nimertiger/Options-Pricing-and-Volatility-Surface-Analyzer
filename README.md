@@ -1,8 +1,10 @@
 # Options Pricing and Volatility Surface Analyzer
 
-A financial derivatives pricing tool built with Python and Streamlit. This project implements two core option pricing models, Black-Scholes and Monte Carlo simulation, and visualizes how option prices and P&L change across different market scenarios.
+A financial derivatives pricing tool built with Python and Streamlit in FALL 2025. This project implements two core option pricing models, Black-Scholes and Monte Carlo simulation, and visualizes how option prices and P&L change across different market scenarios.
 
-I built this to get a deeper understanding of how options are priced in practice and to explore how sensitive option values are to changes in volatility and the underlying spot price.
+I built this independently outside of coursework after taking a Derivatives Securities Pricing course. The goal was to deepen my understanding of the models we studied and to build something concrete I could show my professor
+
+![App Screenshot](assets/screenshot.png)
 
 ---
 
@@ -21,30 +23,46 @@ Beyond just pricing, it generates:
 
 ## Pricing Models
 
-**Black-Scholes**
+### Black-Scholes
 
 The closed-form solution to the Black-Scholes PDE under the assumption of constant volatility and log-normally distributed returns. The implementation includes a continuous dividend yield adjustment via the cost-of-carry term.
 
-The formula prices a European call as:
+A European call is priced as:
 
-```
-C = S * N(d1) - K * e^(-rT) * N(d2)
+$$C = S \cdot N(d_1) - K e^{-rT} \cdot N(d_2)$$
 
-d1 = [ln(S/K) + (r - q + 0.5 * sigma^2) * T] / (sigma * sqrt(T))
-d2 = d1 - sigma * sqrt(T)
-```
+$$d_1 = \frac{\ln(S/K) + (r - q + \frac{1}{2}\sigma^2)T}{\sigma\sqrt{T}}$$
 
-where q is the continuous dividend yield.
+$$d_2 = d_1 - \sigma\sqrt{T}$$
 
-**Monte Carlo**
+where:
+- $S$ = spot price
+- $K$ = strike price
+- $T$ = time to expiry in years
+- $r$ = risk-free rate
+- $q$ = continuous dividend yield
+- $\sigma$ = implied volatility
+- $N(\cdot)$ = standard normal CDF
 
-Simulates N paths of the underlying using Geometric Brownian Motion under the risk-neutral measure:
+The put price follows from put-call parity:
 
-```
-S(t) = S(t-1) * exp((r - q - 0.5 * sigma^2) * h + sigma * sqrt(h) * Z)
-```
+$$P = K e^{-rT} \cdot N(-d_2) - S \cdot N(-d_1)$$
 
-where Z is a standard normal random variable and h is the time step size. The option price is the discounted average payoff across all paths. More paths give more accuracy at the cost of computation time.
+### Monte Carlo
+
+Simulates $N$ paths of the underlying asset using Geometric Brownian Motion under the risk-neutral measure:
+
+$$S_{t} = S_{t-1} \cdot \exp\!\left[\left(r - q - \frac{1}{2}\sigma^2\right)h + \sigma\sqrt{h}\, Z\right]$$
+
+where $Z \sim \mathcal{N}(0,1)$ and $h = T / \text{steps}$ is the time step size.
+
+The option price is the discounted expected payoff across all $N$ paths:
+
+$$C = e^{-rT} \cdot \frac{1}{N} \sum_{i=1}^{N} \max(S_T^{(i)} - K,\ 0)$$
+
+$$P = e^{-rT} \cdot \frac{1}{N} \sum_{i=1}^{N} \max(K - S_T^{(i)},\ 0)$$
+
+More paths give a more accurate estimate at the cost of computation time. By the law of large numbers the Monte Carlo price converges to the Black-Scholes price as $N \to \infty$.
 
 ---
 
@@ -52,9 +70,9 @@ where Z is a standard normal random variable and h is the time step size. The op
 
 This is the most practically useful feature. You input a purchase price for both the call and the put, and the heatmap shows your P&L across a grid of spot and volatility scenarios:
 
-```
-P&L = current_model_value - purchase_price
-```
+$$\text{P\&L} = V(\sigma', S') - V_0$$
+
+where $V(\sigma', S')$ is the model value at the shocked scenario and $V_0$ is your purchase price.
 
 Green cells are profitable scenarios, red cells are losing scenarios. The colormap is centered at zero so breakeven is always white. This lets you immediately see your directional exposure and vol exposure at a glance.
 
@@ -83,7 +101,7 @@ CREATE TABLE inputs (
 )
 ```
 
-**outputs table** stores one row per heatmap cell (225 rows for a 15x15 grid), linked back to the parent calculation via calc_id.
+**outputs table** stores one row per heatmap cell (225 rows for a 15x15 grid), linked back to the parent calculation via `calc_id`.
 
 ```sql
 CREATE TABLE outputs (
@@ -130,22 +148,24 @@ options-pricer/
 ├── app.py               # Main application
 ├── options_log.db       # SQLite database (auto-generated)
 ├── requirements.txt
+├── assets/
+│   └── screenshot.png
 └── README.md
 ```
 
 ---
 
-## To add next... 
+## What I Would Add Next
 
-- **Greeks** (delta, gamma, vega, theta) computed analytically for Black-Scholes and numerically for Monte Carlo
-- **Implied volatility solver** using Brent's method to back out IV from a market price, which would make the volatility surface actually reflect market-observed skew rather than a flat vol assumption
-- **Volatility smile visualization** by plotting IV against strike for a fixed expiry
+- **Greeks** — delta $\Delta$, gamma $\Gamma$, vega $\nu$, theta $\Theta$ computed analytically for Black-Scholes and via finite differences for Monte Carlo
+- **Implied volatility solver** using Brent's method to back out $\sigma_{imp}$ from a market price, which would make the surface reflect real market-observed skew rather than a flat vol assumption
+- **Volatility smile visualization** by plotting $\sigma_{imp}$ against strike $K$ for a fixed expiry $T$
 - **Historical data integration** via yfinance to price options on real tickers with real market inputs
 
 ---
 
 ## References
 
-- Black, F. and Scholes, M. (1973). The Pricing of Options and Corporate Liabilities.
-- Hull, J. (2022). Options, Futures, and Other Derivatives.
-- Natenberg, S. (1994). Option Volatility and Pricing.
+- Black, F. and Scholes, M. (1973). The Pricing of Options and Corporate Liabilities. *Journal of Political Economy*.
+- Hull, J. (2022). *Options, Futures, and Other Derivatives*.
+- Natenberg, S. (1994). *Option Volatility and Pricing*.
