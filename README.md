@@ -4,7 +4,7 @@ A financial derivatives pricing tool built with Python and Streamlit in FALL 202
 
 I built this independently outside of coursework after taking a Derivatives Securities Pricing course. The goal was to deepen my understanding of the models we studied and to build something concrete I could show my professor
 
-![App Screenshot](assets/screenshot.png)
+![App Screenshot](assets/preview.webp)
 
 ---
 
